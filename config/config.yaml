@@ -1,6 +1,6 @@
 poller: 
   devices:
-    - hostname: "demo.abhisheklab.com"
+    - hostname: "demo.snmplabs.com"
       community: "public"
       version: 2 
   aggregator:
