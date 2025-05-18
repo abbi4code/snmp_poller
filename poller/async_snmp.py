@@ -1,5 +1,5 @@
 import asyncio
-from pysnmp.hlapi.asyncio import (SnmpEngine, CommunityData, UdpTransportTarget, ContextData, ObjectType, ObjectIdentity, getCmd)
+from pysnmp.hlapi.asyncio import (SnmpEngine, CommunityData, UdpTransportTarget, ContextData, ObjectType, ObjectIdentity, get_cmd)
 
 
 class AsyncSNMPClient:
@@ -9,7 +9,6 @@ class AsyncSNMPClient:
         self.community = community
         # mpModel=0 for SNMPv1, mpModel=1 for SNMPv2c/SNMPv3
         self.mp_model = 1 if version >=2 else 0
-        # ! each client have its own engine instance means ??
         self.engine = SnmpEngine()
         
     
@@ -21,13 +20,12 @@ class AsyncSNMPClient:
         # defining the port target like means which port on the hostname to target for 
         #if below not works use this (got this in doc)
         #UdpTransportTarget.create(self.hostname, 161)
-        transport_target = UdpTransportTarget((self.hostname,161))
+        transport_target = await UdpTransportTarget.create((self.hostname,161), timeout =10, retries = 3)
         
         #* getCmd returns a coroutine generator 
         # ^ we have to go async here 
-        error_indication, error_status, error_index, var_binds = await getCmd(self.engine,self.community,transport_target,ContextData(), ObjectType(ObjectIdentity(oid)))
+        error_indication, error_status, error_index, var_binds = await get_cmd(self.engine,community_data,transport_target,ContextData(), ObjectType(ObjectIdentity(oid)))
         
-        # ! error_indication vs error_status
         if error_indication:
             print(f"Error getting in SNMP data from hostname:{self.hostname} OID: {oid}: {error_indication}")
             return None
@@ -54,8 +52,6 @@ async def test_snmp_get():
     # will use the config for device details later
     # for noww using just hardcoded
     
-    #! like here client means we are polling for a device here so if we have multiple devices then we will be using for loops here, right, depending no of hostnames in the config file
-    # !so even for every oid we will be polling each device separtely (wouldnt be too much calling)
     client = AsyncSNMPClient(hostname="demo.snmplabs.com", community="public",version=2)
     
     print(f"Attempting to get system description (1.3.6.1.2.1.1.1.0) from {client.hostname}")
@@ -77,6 +73,6 @@ async def test_snmp_get():
         print("Failed to get system Uptime")
     
 
-if __name__ == "__main__.py":
+if __name__ == "__main__":
     asyncio.run(test_snmp_get())
             
