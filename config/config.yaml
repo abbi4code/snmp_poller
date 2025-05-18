@@ -1,0 +1,9 @@
+poller: 
+  devices:
+    - hostname: "demo.abhisheklab.com"
+      community: "public"
+      version: 2 
+  aggregator:
+      address: "localhost"
+      port: 5555
+
