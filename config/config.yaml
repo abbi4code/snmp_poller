@@ -1,7 +1,8 @@
 poller: 
   devices:
-    - hostname: "demo.snmplabs.com"
+    - hostname: "127.0.0.1" #so changed to localhost for now
       community: "public"
+      port: 1161
       version: 2 
   aggregator:
       address: "localhost"
