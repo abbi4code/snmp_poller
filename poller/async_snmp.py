@@ -1,5 +1,5 @@
 import asyncio
-from pysnmp.hlapi.asyncio import (SnmpEngine, CommunityData, UdpTransportTarget, ContextData, ObjectType, ObjectIdentity, getCmd,nextCmd)
+from pysnmp.hlapi.asyncio import (SnmpEngine, CommunityData, UdpTransportTarget, ContextData, ObjectType, ObjectIdentity, getCmd,nextCmd, bulkCmd)
 
 
 class AsyncSNMPClient:
@@ -18,7 +18,6 @@ class AsyncSNMPClient:
         
         # ^Look out for its str
         community_data = CommunityData(self.community,mpModel = self.mp_model)
-        # defining the port target like means which port on the hostname to target for 
         #if below not works use this (got this in doc)
         #this below works on the latest pysnmp version but this version incompatible with snmpsim (will replace if got real network device access)
         #UdpTransportTarget.create(self.hostname, 161)
@@ -42,8 +41,6 @@ class AsyncSNMPClient:
         # & Will implement this later
     async def walk(self,oid_prefix):
         """ walk the oid tree starting from the given oid_prefix"""
-        #! like here we are taking oid_prefix instead of taking a complete single oid
-        # ^ so this will bring us all related oids data right that start with that same prefix
             
         result = {}
             
@@ -58,6 +55,8 @@ class AsyncSNMPClient:
             # althrough proper walk in it will need more logic to detect end-of-mib
             print(f"have still to add more logic in it for {self.hostname}")
             current_oid = oid_prefix
+            
+            
             while True:
                 error_indication,error_status,error_index,var_bind_table = await nextCmd(self.engine,community_data,transport_target,ContextData,ObjectType(ObjectIdentity(current_oid)))
                 
@@ -66,18 +65,12 @@ class AsyncSNMPClient:
                     break
                 # nextCmd usually returns one varBind
                 var_bind = var_bind_table[0]
-                
-                #!couple of doubts
-                # like here oid vs prefix (in structure) i want to visualize
-                # also like you are assigning the return oid with prefix, wont this cause problem as this oid will a complete oid right as far i think (like i am thinking that oid are complete oid while predix are short one) so if here at last we assign the cucrent oid to this return oid, we wont be getting more oid with tthe prefix right, this will now return oid taht compelte match with this return oid
                 oid, value = var_bind
                 
                 if not str(oid).startswith(oid_prefix):
                     print(f"Incorrect return oid for our prefix_oid: {current_oid}")
                     break
                 
-                #! here explain like i want to visualize the var_bind earlier vs now var_bind_table in real also this reulst like what storing in this how data looks here, also what below we are doing also
-                #! here we are not pushing data right, as result is empty initailly still how we are doign result[str(oid)]
                 result[str(oid)] = value.prettyPrint()
                 
                 current_oid = oid
@@ -85,8 +78,35 @@ class AsyncSNMPClient:
             
             return result
         
+        bulk_gen = await bulkCmd(self.engine, community_data, transport_target,ContextData(),0,25,ObjectType(ObjectIdentity(oid_prefix)))
+        
+        async for error_indication,error_status,error_index, var_binds_table in bulk_gen:
             
-    
+            if error_indication:
+                print(f"Error while connecting to hostname {self.hostname} for prefix: {oid_prefix}")
+                # hmm for simple can break on error
+                # will add better error_handling here
+                # as based on the err, we might just want to logg or maybe just continue 
+                break 
+            elif error_status:
+                print(f"SNMP walk error_status for hostname: {self.hostname} prefix: {oid_prefix}")
+                
+                # ! below list of err handling we need to add later on 
+                # ^ snmp errors (liek noSuchName if we wlk past the end of the table quickly)
+                # ^ for a better check, we need to check if err means we are at the end of the MIB view
+                break
+            else:
+                for var_bind in var_bind_table:
+                    oid,value = var_bind
+                    
+                    # ! what about that case when we have multiple oid_prefix, then how we will handle think of the soln
+                    if not str(oid).startswith(oid_prefix):
+                        return result
+                    # !what does here prettyPrint() does extra here, cant we do same without it 
+                    result[str(oid)] = value.prettyPrint()
+                    
+        return result
+            
 async def test_snmp_get():
     # will use the config for device details later
     # for noww using just hardcoded
@@ -96,7 +116,7 @@ async def test_snmp_get():
     
     client = AsyncSNMPClient(hostname=snmp_hostname,port = snmp_port ,community="public",version=2)
     
-    print(f"Attempting to get system description (1.3.6.1.2.1.1.1.0) from {client.hostname}")
+    print(f"\n------------attempting to get system description (1.3.6.1.2.1.1.1.0) from {client.hostname}------")
     
     system_description = await client.get("1.3.6.1.2.1.1.1.0")
     
@@ -113,6 +133,30 @@ async def test_snmp_get():
         print(f"System Uptime: {system_uptime}")
     else:
         print("Failed to get system Uptime")
+        
+    print(f"\n testing WALK for if-mib interface table (1.3.6.1.2.1.2.2.1) from {client.hostname} ---")
+    
+    interface_data = await client.walk("1.3.6.1.2.1.2.2.1")
+    
+    print(f"Interface_data: {interface_data}")
+    
+    if interface_data:
+        count = 0
+        
+        for data in interface_data.items():
+            oid,value = data
+            print(f"{oid}: {value}")
+            
+            count += 1
+            
+            if count >= 10 and len(interface_data) > 10:
+                print(".. and moree")
+                break
+        if not interface_data:
+            print("no interface data found till here--")
+    else:
+        print("failed to get interface_data via walk")
+            
     
 
 if __name__ == "__main__":
