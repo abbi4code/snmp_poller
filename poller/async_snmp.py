@@ -1,5 +1,5 @@
 import asyncio
-from pysnmp.hlapi.asyncio import (SnmpEngine, CommunityData, UdpTransportTarget, ContextData, ObjectType, ObjectIdentity, getCmd)
+from pysnmp.hlapi.asyncio import (SnmpEngine, CommunityData, UdpTransportTarget, ContextData, ObjectType, ObjectIdentity, getCmd,nextCmd)
 
 
 class AsyncSNMPClient:
@@ -20,11 +20,10 @@ class AsyncSNMPClient:
         community_data = CommunityData(self.community,mpModel = self.mp_model)
         # defining the port target like means which port on the hostname to target for 
         #if below not works use this (got this in doc)
+        #this below works on the latest pysnmp version but this version incompatible with snmpsim (will replace if got real network device access)
         #UdpTransportTarget.create(self.hostname, 161)
         transport_target = UdpTransportTarget((self.hostname,self.port), timeout =10, retries = 3)
         
-        #* getCmd returns a coroutine generator 
-        # ^ we have to go async here 
         error_indication, error_status, error_index, var_binds = await getCmd(self.engine,community_data,transport_target,ContextData(), ObjectType(ObjectIdentity(oid)))
         
         if error_indication:
@@ -38,17 +37,56 @@ class AsyncSNMPClient:
             )
             return None
         else:
-            #var_binds are list of tuples (OID,values)
-            #for a get req, contains only one value
-            #value wouldnt be in plain py type
-            # why no [0][0] and what does this prettyPrint() do
             return var_binds[0][1].prettyPrint()
         
         # & Will implement this later
-        async def walk(self,oid_prefix):
-            raise NotImplementedError("Baad me karunga bro pehle ek device pe toh check karlu")
+    async def walk(self,oid_prefix):
+        """ walk the oid tree starting from the given oid_prefix"""
+        #! like here we are taking oid_prefix instead of taking a complete single oid
+        # ^ so this will bring us all related oids data right that start with that same prefix
+            
+        result = {}
+            
+        community_data = CommunityData(self.community,mpModel =self.mp_model)
         
-
+        transport_target = UdpTransportTarget((self.hostname,self.port),timeout = 10, retries = 3)
+        
+        # bulkCmd best for SNMPv2c/v3
+        # but for v1c we can use nextCmd
+        if self.mp_model == 0:
+            # basic implementation of snmpv1c 
+            # althrough proper walk in it will need more logic to detect end-of-mib
+            print(f"have still to add more logic in it for {self.hostname}")
+            current_oid = oid_prefix
+            while True:
+                error_indication,error_status,error_index,var_bind_table = await nextCmd(self.engine,community_data,transport_target,ContextData,ObjectType(ObjectIdentity(current_oid)))
+                
+                if error_indication or error_status or not var_bind_table:
+                    print(f"errors while polling for hostname {self.hostname}: error: {error_indication or error_status}")
+                    break
+                # nextCmd usually returns one varBind
+                var_bind = var_bind_table[0]
+                
+                #!couple of doubts
+                # like here oid vs prefix (in structure) i want to visualize
+                # also like you are assigning the return oid with prefix, wont this cause problem as this oid will a complete oid right as far i think (like i am thinking that oid are complete oid while predix are short one) so if here at last we assign the cucrent oid to this return oid, we wont be getting more oid with tthe prefix right, this will now return oid taht compelte match with this return oid
+                oid, value = var_bind
+                
+                if not str(oid).startswith(oid_prefix):
+                    print(f"Incorrect return oid for our prefix_oid: {current_oid}")
+                    break
+                
+                #! here explain like i want to visualize the var_bind earlier vs now var_bind_table in real also this reulst like what storing in this how data looks here, also what below we are doing also
+                #! here we are not pushing data right, as result is empty initailly still how we are doign result[str(oid)]
+                result[str(oid)] = value.prettyPrint()
+                
+                current_oid = oid
+                
+            
+            return result
+        
+            
+    
 async def test_snmp_get():
     # will use the config for device details later
     # for noww using just hardcoded
