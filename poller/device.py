@@ -39,7 +39,7 @@ class Device:
 
         print(f"Polling for device with hostname {self.hostname}")
 
-        try
+        try:
             data = {
                 "hostname": self.hostname,
                 "timestamp": int(time.time()),
@@ -111,7 +111,6 @@ class Device:
             
             print(f"successfully polled {self.hostname}. datas: sysName: {data['data'].get('sys_name')} ")
             return data
-        
         except Exception as e:
             print(f"Error while polling device: {self.hostname}: {e}")
 
