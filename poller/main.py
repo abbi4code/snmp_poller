@@ -65,12 +65,49 @@ async def main():
         return
     
     # nwo lets poll all devices concurrently 
-    
-    
 
+    # so calling (poll_device() for each poller)
+    # what is this doing here, also i have confusion are we calling each poller for each device (means 1 poller for per device)
+    # CHECK the architecture of switchmap how that handling this 
 
+    polling_tasks = [poller.poll_device for poller in pollers]
+    # like how does it looks is it like we are appending data from each hostname and appending this in this polling_task
 
+    print(f"\nstarting to poll {len(pollers)} device(s)")
 
+    #now here comes the confusion, as we already polled each device and get the data, why here we are polling again
+    # i am seriously not understanding what going on here, how every dot is connecting
 
+    # what is the use of that star also please explan me what its doing this whole thing
+    all_devices_data = await asyncio.gather(*polling_tasks)
+    # what are coroutines anyways, i heard this work almost everywhere here
 
-        
+    print("\n<--Pollingggg completesss yayy --->")
+
+    for device_data in all_devices_data:
+        if device_data:
+            if "error" in device_data:
+                print(f"Error in fetching data for {device_data.get("hostname", "Unknown Hostname")}: error->{device_data["error"]}")
+            else:
+                print(f"Priting data for hostname: {device_data["hostname"]}")
+               
+                if "data" in device_data and device_data["data"]:
+                    print(f"system_description: {device_data["data"]["sys_desc"]}")
+                    print(f"system_name: {device_data["data"]["sys_name"]}")
+                    print(f"system_uptime: {device_data["data"]["sys_uptime"]}")
+
+                    if "interfaces" in device_data["data"] and device_data["data"]["interfaces"]:
+                        print("printing each interfaces")
+
+                        for if_index,if_info in device_data["data"]["interfaces"]:
+                            print(f"Index: {if_index}: Name: {if_info.get("name","N/A")} & status: {if_info.get("status","N/A")}")
+                    else:
+                        print("no interfaces found")
+                else:
+                    print("no data retrived")
+
+        else:
+            print("No device data found")
+
+if __name__ == "__main__":
+    asyncio.run(main())

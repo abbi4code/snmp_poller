@@ -107,58 +107,59 @@ class AsyncSNMPClient:
                     
         return result
             
-async def test_snmp_get():
-    # will use the config for device details later
-    # for noww using just hardcoded
+# ------depreciated 🙂-----
+# async def test_snmp_get():
+#     # will use the config for device details later
+#     # for noww using just hardcoded
     
-    snmp_hostname = "127.0.0.1"
-    snmp_port = 1161
+#     snmp_hostname = "127.0.0.1"
+#     snmp_port = 1161
     
-    client = AsyncSNMPClient(hostname=snmp_hostname,port = snmp_port ,community="public",version=2)
+#     client = AsyncSNMPClient(hostname=snmp_hostname,port = snmp_port ,community="public",version=2)
     
-    print(f"\n------------attempting to get system description (1.3.6.1.2.1.1.1.0) from {client.hostname}------")
+#     print(f"\n------------attempting to get system description (1.3.6.1.2.1.1.1.0) from {client.hostname}------")
     
-    system_description = await client.get("1.3.6.1.2.1.1.1.0")
+#     system_description = await client.get("1.3.6.1.2.1.1.1.0")
     
-    if system_description:
-        print(f"System Description: {system_description}")
-    else:
-        print("Failed to get the sys desc")
+#     if system_description:
+#         print(f"System Description: {system_description}")
+#     else:
+#         print("Failed to get the sys desc")
     
-    print("\nAttempting to get the system Uptime (1.3.6.1.2.1.1.3.0)...")
+#     print("\nAttempting to get the system Uptime (1.3.6.1.2.1.1.3.0)...")
     
-    system_uptime = await client.get("1.3.6.1.2.1.1.3.0")
+#     system_uptime = await client.get("1.3.6.1.2.1.1.3.0")
     
-    if system_uptime:
-        print(f"System Uptime: {system_uptime}")
-    else:
-        print("Failed to get system Uptime")
+#     if system_uptime:
+#         print(f"System Uptime: {system_uptime}")
+#     else:
+#         print("Failed to get system Uptime")
         
-    print(f"\n testing WALK for if-mib interface table (1.3.6.1.2.1.2.2.1) from {client.hostname} ---")
+#     print(f"\n testing WALK for if-mib interface table (1.3.6.1.2.1.2.2.1) from {client.hostname} ---")
     
-    interface_data = await client.walk("1.3.6.1.2.1.2.2.1")
+#     interface_data = await client.walk("1.3.6.1.2.1.2.2.1")
     
-    print(f"Interface_data: {interface_data}")
+#     print(f"Interface_data: {interface_data}")
     
-    if interface_data:
-        count = 0
+#     if interface_data:
+#         count = 0
         
-        for data in interface_data.items():
-            oid,value = data
-            print(f"{oid}: {value}")
+#         for data in interface_data.items():
+#             oid,value = data
+#             print(f"{oid}: {value}")
             
-            count += 1
+#             count += 1
             
-            if count >= 10 and len(interface_data) > 10:
-                print(".. and moree")
-                break
-        if not interface_data:
-            print("no interface data found till here--")
-    else:
-        print("failed to get interface_data via walk")
+#             if count >= 10 and len(interface_data) > 10:
+#                 print(".. and moree")
+#                 break
+#         if not interface_data:
+#             print("no interface data found till here--")
+#     else:
+#         print("failed to get interface_data via walk")
             
     
 
-if __name__ == "__main__":
-    asyncio.run(test_snmp_get())
+# if __name__ == "__main__":
+#     asyncio.run(test_snmp_get())
             
