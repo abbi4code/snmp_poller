@@ -20,9 +20,9 @@ class Device:
 
         # maybe here we are using .get in case for adding a def value
         self.hostname = device_config["hostname"]
-        self.port = device_config.get["port",161]
-        self.community = device_config.get["community","public"]
-        self.version = device_config.get["version",2]
+        self.port = device_config.get("port",161)
+        self.community = device_config.get("community","public")
+        self.version = device_config.get("version",2)
 
         self.client = AsyncSNMPClient(
             hostname= self.hostname,

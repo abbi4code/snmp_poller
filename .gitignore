@@ -1,3 +1,5 @@
 venv
 .vscode
 snmpsim-data/public.snmprec
+test_snmpconnection.py
+public.txt
