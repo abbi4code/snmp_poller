@@ -3,10 +3,10 @@ import time
 # import json (we will need this later when we use zeroMQ)
 #import zmq.asyncio
 
-from .async_snmp import AsyncSNMPClient
+from async_snmp import AsyncSNMPClient
 
 class Device:
-    def __int__(self,device_config,aggregator_config):
+    def __init__(self,device_config,aggregator_config):
         """
         Initialize the devicePoller
 
@@ -120,17 +120,3 @@ class Device:
                 "error": str(e),
                 "data": {}
             }
-
-    
-
-
-                
-
-
-
-
-
-
-
-
-    

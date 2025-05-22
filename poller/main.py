@@ -7,7 +7,7 @@ import asyncio
 import yaml
 import os 
 
-from .device import Device
+from device import Device
 
 async def main():
 
@@ -58,7 +58,7 @@ async def main():
             aggregator_config = aggregator_cfg_for_poller
         )
         #now we are just inserting the data from each devices 
-        pollers.append()
+        pollers.append(poller)
     
     if not pollers:
         print("No valid device pollers could be created")
@@ -69,8 +69,8 @@ async def main():
     # so calling (poll_device() for each poller)
     # what is this doing here, also i have confusion are we calling each poller for each device (means 1 poller for per device)
     # CHECK the architecture of switchmap how that handling this 
-
-    polling_tasks = [poller.poll_device for poller in pollers]
+    # this gather all polling tasks and runs them concurrently
+    polling_tasks = [poller.poll_device() for poller in pollers]
     # like how does it looks is it like we are appending data from each hostname and appending this in this polling_task
 
     print(f"\nstarting to poll {len(pollers)} device(s)")
@@ -99,7 +99,7 @@ async def main():
                     if "interfaces" in device_data["data"] and device_data["data"]["interfaces"]:
                         print("printing each interfaces")
 
-                        for if_index,if_info in device_data["data"]["interfaces"]:
+                        for if_index,if_info in device_data["data"]["interfaces"].items():
                             print(f"Index: {if_index}: Name: {if_info.get("name","N/A")} & status: {if_info.get("status","N/A")}")
                     else:
                         print("no interfaces found")
