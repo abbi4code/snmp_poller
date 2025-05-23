@@ -140,4 +140,32 @@ class Device:
                 "data": {}
             }
     
+    async def send_to_aggregator(self,data):
+
+        try:
+            await self.push_socket.send_json(data)
+
+            print(f"send data for {self.hostname} to aggregator via zeroMQq")
+
+
+        
+        except Exception as e:
+            print(f"Error while sending data to aggregator: err: {e}")
+
+    async def poll_and_send(self):
+        """ poll the device and send the data to aggregator"""
+
+        #first, just poll the device
+        polled_data = await self.poll_device()
+
+        # then if o error, the jsut send the data
+        # so one error would be the poller realted err & one could be if no device get polled atall
+
+        if polled_data and "error" not in polled_data:
+            await self.send_to_aggregator(polled_data)
+        elif polled_data and "error" in polled_data:
+            print(f"didnt send data for {self.hostname} due to polling error: {polled_data["error"]}")
+        else:
+            print("No data from polled_device")
+
     
