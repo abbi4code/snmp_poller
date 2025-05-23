@@ -168,4 +168,18 @@ class Device:
         else:
             print("No data from polled_device")
 
-    
+    async def close_zmq(self):
+        """ closing the push_socket n context """
+
+        #still multiple things to keep in mind and had to work on
+        #1. context should be terminated when the application is shutting donw
+        #2. typically in the main poller script after all pollers are done
+        #3. for now we add it here, but consider centralizing context termination
+        #4. if multiple poller shaer a context then only one should terminate it
+        #5. since, each poller has its own context here, this is okayyy
+        #6. also self.context.term() (use htis in main script )
+
+        print(f"closing the zmq resources for {self.hostname}")
+        if self.push_socket:
+            await self.push_socket.close()
+
