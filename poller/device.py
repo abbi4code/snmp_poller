@@ -1,7 +1,7 @@
 import asyncio
 import time 
-# import json (we will need this later when we use zeroMQ)
-#import zmq.asyncio
+import json #(we will need this later when we use zeroMQ)
+import zmq.asyncio
 
 from async_snmp import AsyncSNMPClient
 
@@ -31,9 +31,28 @@ class Device:
             version=self.version
         )
 
-        self.aggregator_address = aggregator_config["address"]
-        self.aggregator_port = aggregator_config["port"]
-        print(f"device POller initialize for {self.hostname}:{self.port}")
+        self.aggregator_address = aggregator_config.get("address","localhost")
+        self.aggregator_port = aggregator_config.get("port",5555)
+        print(f"device Poller initialize for {self.hostname}:{self.port}")
+
+        # so for now, like this architechture is good 
+        # so, each device instance will have its own push socket
+        # although at scale have to think that this context should be shared 
+        # if multiple pollers run in the same process
+        # here one poller is polling all the data, like this one hostname means one context right, 
+        # here for each device we haev multiple oid to poll, so here, for each oid, each poller is polling or one poller is polling all of em
+
+
+        self.context = zmq.Context()
+
+        self.push_socket = self.context.socket(zmq.PUSH)
+        # what is tcp connection here, is this different from http
+        self.push_socket.connect(f"tcp://{self.aggregator_address}:{self.aggregator_port}")
+        print(f"device poller for {self.hostname} PUSH socket connected to tcp://{self.aggregator_address}:{self.aggregator_port}")
+
+        print(f"DevicePoller initialized for {self.hostname}:{self.port}")
+
+
     
     async def poll_device(self):
 
@@ -120,3 +139,5 @@ class Device:
                 "error": str(e),
                 "data": {}
             }
+    
+    
