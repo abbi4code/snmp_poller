@@ -6,8 +6,10 @@
 import asyncio
 import yaml
 import os 
+import zmq.asyncio
 
 from device import Device
+
 
 async def main():
 
@@ -38,6 +40,10 @@ async def main():
         print("No devices are there in poller.devices")
         return
     
+    # like if want to have a single zmq context for all the pollers
+    # like if we want to share context 
+    #zmq_context = zmq.asyncio.Context() 
+    
     for each_device in config["poller"]["devices"]:
         if "hostname" not in each_device:
             print(f"skipping this device as no hostname found for it in the config")
@@ -53,6 +59,7 @@ async def main():
 
         # here we are just creating a instance for each devices 
         # not called for polling here
+        #<----here we can pass that context (it would be a central context)
         poller = Device(
             device_config = each_device,
             aggregator_config = aggregator_cfg_for_poller
@@ -70,7 +77,9 @@ async def main():
     # what is this doing here, also i have confusion are we calling each poller for each device (means 1 poller for per device)
     # CHECK the architecture of switchmap how that handling this 
     # this gather all polling tasks and runs them concurrently
-    polling_tasks = [poller.poll_device() for poller in pollers]
+
+    #polling_tasks = [poller.poll_device() for poller in pollers]
+    polling_tasks = [poller.poll_and_send() for poller in pollers]
     # like how does it looks is it like we are appending data from each hostname and appending this in this polling_task
 
     print(f"\nstarting to poll {len(pollers)} device(s)")
@@ -79,35 +88,48 @@ async def main():
     # i am seriously not understanding what going on here, how every dot is connecting
 
     # what is the use of that star also please explan me what its doing this whole thing
-    all_devices_data = await asyncio.gather(*polling_tasks)
+    await asyncio.gather(*polling_tasks)
     # what are coroutines anyways, i heard this work almost everywhere here
 
     print("\n<--Pollingggg completesss yayy --->")
 
-    for device_data in all_devices_data:
-        if device_data:
-            if "error" in device_data:
-                print(f"Error in fetching data for {device_data.get("hostname", "Unknown Hostname")}: error->{device_data["error"]}")
-            else:
-                print(f"Priting data for hostname: {device_data["hostname"]}")
+    print(f"Poller: cleaning zeroMQ resources")
+    for poller in pollers:
+        await poller.close_zmq()
+
+    # will test upper one first 
+    # sharing a single context 
+    # if zmq_context and not zmq_context.closed:
+        # print("terminatingg")
+        # zmq_context.term()
+
+    # for device_data in all_devices_data:
+    #     if device_data:
+    #         if "error" in device_data:
+    #             print(f"Error in fetching data for {device_data.get("hostname", "Unknown Hostname")}: error->{device_data["error"]}")
+    #         else:
+    #             print(f"Priting data for hostname: {device_data["hostname"]}")
                
-                if "data" in device_data and device_data["data"]:
-                    print(f"system_description: {device_data["data"]["sys_desc"]}")
-                    print(f"system_name: {device_data["data"]["sys_name"]}")
-                    print(f"system_uptime: {device_data["data"]["sys_uptime"]}")
+    #             if "data" in device_data and device_data["data"]:
+    #                 print(f"system_description: {device_data["data"]["sys_desc"]}")
+    #                 print(f"system_name: {device_data["data"]["sys_name"]}")
+    #                 print(f"system_uptime: {device_data["data"]["sys_uptime"]}")
 
-                    if "interfaces" in device_data["data"] and device_data["data"]["interfaces"]:
-                        print("printing each interfaces")
+    #                 if "interfaces" in device_data["data"] and device_data["data"]["interfaces"]:
+    #                     print("printing each interfaces")
 
-                        for if_index,if_info in device_data["data"]["interfaces"].items():
-                            print(f"Index: {if_index}: Name: {if_info.get("name","N/A")} & status: {if_info.get("status","N/A")}")
-                    else:
-                        print("no interfaces found")
-                else:
-                    print("no data retrived")
+    #                     for if_index,if_info in device_data["data"]["interfaces"].items():
+    #                         print(f"Index: {if_index}: Name: {if_info.get("name","N/A")} & status: {if_info.get("status","N/A")}")
+    #                 else:
+    #                     print("no interfaces found")
+    #             else:
+    #                 print("no data retrived")
 
-        else:
-            print("No device data found")
+    #     else:
+    #         print("No device data found")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("process interrupted by user. goinggg down man")
