@@ -8,3 +8,8 @@ poller:
       address: "localhost"
       port: 5555
 
+aggregator_server:
+  address: "*"
+  port: 5555
+  storage: 
+    path: "./data/devices.db"
