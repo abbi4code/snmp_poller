@@ -39,7 +39,15 @@ class Collector:
                 print(json.dumps(data,indent=2))
 
                 #we will store this data later on
-                
+        except asyncio.CancelledError:
+            print("collection task cancell")
+        except Exception as e:
+            print(f"err in collector loop: {e}")
+        finally:
+            print("shutting down collector")
+            if self.pull_socket and not self.pull_socket.close:
+                self.pull_socket.close()
+
 
 
 
