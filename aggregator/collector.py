@@ -2,7 +2,7 @@ import asyncio
 import zmq.asyncio
 import json
 
-
+from storage import DeviceStorage
 class Collector:
     def __init__(self, aggregator_config):
         self.address = aggregator_config.get("address","localhost")
@@ -13,13 +13,31 @@ class Collector:
 
         self.pull_socket.bind(f"tcp://{self.address}:{self.port}")
 
+        # db_path= aggregator_config.get("sto")
+        if "storage" not in aggregator_config or "path" not in aggregator_config["storage"]:
+            print("database storage not configured")
+            
+            storage_path = "./data/devices.db"
+            if "storage" in aggregator_config and "path" in aggregator_config["storage"]:
+                 storage_path = aggregator_config["storage"]["path"]
+            print(f"Aggregator WARNING: Using storage path '{storage_path}' (default or from config).")
+        else:
+            storage_path = aggregator_config["storage"]["path"]
+        
+        self.storage = DeviceStorage(db_path=storage_path)
+        print("DeviceStorgae instance created")
+
+
+        
+
         print(f"aggregator pull socket now listening for address: {self.address} on port: {self.port}")
 
     async def initialize(self):
         """ will initialize the data needed by collector """
         # here will initialize those storages later (for now just chekc if pull socket works or not)
+        #this will create DB tables if they dont exist earlier
+        await self.storage.initialize() 
         print("aggre: dataCollector initialize")
-        pass
 
     async def pull_data(self):
 
@@ -38,6 +56,11 @@ class Collector:
                 # learn more parameters (including indent)
                 print(json.dumps(data,indent=2))
 
+                if "error" not in data:
+                    await self.storage.store_device_data(data=data)
+                    print(f"Data for {hostname} should be stored now")
+                else:
+                    print(f"error while recieving data for hostname:{hostname}")
                 #we will store this data later on
         except asyncio.CancelledError:
             print("collection task cancell")
