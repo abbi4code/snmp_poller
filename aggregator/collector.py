@@ -1,6 +1,7 @@
 import asyncio
 import zmq.asyncio
 import json
+import zmq
 
 from storage import DeviceStorage
 class Collector:
@@ -8,7 +9,7 @@ class Collector:
         self.address = aggregator_config.get("address","localhost")
         self.port = aggregator_config.get("port", 5555)
 
-        self.context = zmq.Context()
+        self.context = zmq.asyncio.Context()
         self.pull_socket = self.context.socket(zmq.PULL)
 
         self.pull_socket.bind(f"tcp://{self.address}:{self.port}")
@@ -68,8 +69,8 @@ class Collector:
             print(f"err in collector loop: {e}")
         finally:
             print("shutting down collector")
-            if self.pull_socket and not self.pull_socket.close:
-                self.pull_socket.close()
+            if self.pull_socket and not self.pull_socket.closed:
+                self.pull_socket.closed()
 
 
 

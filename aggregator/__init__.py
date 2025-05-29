@@ -8,7 +8,7 @@ from collector import Collector
 
 async def main():
 
-    config_path = "config/config.yml"
+    config_path = "config/config.yaml"
 
     aggregator_config = {}
 

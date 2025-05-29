@@ -3,3 +3,5 @@ venv
 snmpsim-data/public.snmprec
 test_snmpconnection.py
 public.txt
+__pycache__
+./poller/__pycache__

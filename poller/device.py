@@ -43,7 +43,7 @@ class Device:
         # here for each device we haev multiple oid to poll, so here, for each oid, each poller is polling or one poller is polling all of em
 
 
-        self.context = zmq.Context()
+        self.context = zmq.asyncio.Context()
 
         self.push_socket = self.context.socket(zmq.PUSH)
         # what is tcp connection here, is this different from http
