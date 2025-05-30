@@ -78,7 +78,9 @@ class AsyncSNMPClient:
             
             return result
         
-        bulk_gen = await bulkCmd(self.engine, community_data, transport_target,ContextData(),0,25,ObjectType(ObjectIdentity(oid_prefix)))
+        bulk_gen =asyncio.gather(bulkCmd(self.engine, community_data, transport_target,ContextData(),0,25,ObjectType(ObjectIdentity(oid_prefix))))
+        
+        print(f"bulk cmdd-------------------->",bulk_gen)
         
         async for error_indication,error_status,error_index, var_binds_table in bulk_gen:
             
@@ -103,6 +105,9 @@ class AsyncSNMPClient:
                     if not str(oid).startswith(oid_prefix):
                         return result
                     # prettyPrint() converts the value to a readable string format
+                    if hasattr(value, 'tagSet') and 'EndOfMibView' in str(value):
+                        continue
+                    
                     result[str(oid)] = value.prettyPrint()
                     
         return result

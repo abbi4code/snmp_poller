@@ -181,5 +181,5 @@ class Device:
 
         print(f"closing the zmq resources for {self.hostname}")
         if self.push_socket:
-            await self.push_socket.close()
+            self.push_socket.close()
 

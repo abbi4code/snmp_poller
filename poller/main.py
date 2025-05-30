@@ -7,6 +7,7 @@ import asyncio
 import yaml
 import os 
 import zmq.asyncio
+import zmq
 
 from device import Device
 
