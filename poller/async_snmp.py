@@ -77,38 +77,88 @@ class AsyncSNMPClient:
                 
             
             return result
+        # this will help in visualization
+        # For SNMPv2c - use proper bulkCmd implementation
+        var_binds = [ObjectType(ObjectIdentity(oid_prefix))]
         
-        bulk_gen =asyncio.gather(bulkCmd(self.engine, community_data, transport_target,ContextData(),0,25,ObjectType(ObjectIdentity(oid_prefix))))
+        print(f"Starting bulk walk for {self.hostname} with prefix {oid_prefix}")
         
-        print(f"bulk cmdd-------------------->",bulk_gen)
-        
-        async for error_indication,error_status,error_index, var_binds_table in bulk_gen:
+        while var_binds:
+            error_indication, error_status, error_index, var_bind_table = await bulkCmd(
+                self.engine, 
+                community_data, 
+                transport_target,
+                ContextData(),
+                0, 25,  # non-repeaters=0, max-repetitions=25
+                *var_binds
+            )
             
             if error_indication:
-                print(f"Error while connecting to hostname {self.hostname} for prefix: {oid_prefix}")
-                # hmm for simple can break on error
-                # will add better error_handling here
-                # as based on the err, we might just want to logg or maybe just continue 
+                print(f"Error while connecting to hostname {self.hostname} for prefix: {oid_prefix}: {error_indication}")
                 break 
             elif error_status:
-                print(f"SNMP walk error_status for hostname: {self.hostname} prefix: {oid_prefix}")
-                
-                # ! below list of err handling we need to add later on 
-                # ^ snmp errors (liek noSuchName if we wlk past the end of the table quickly)
-                # ^ for a better check, we need to check if err means we are at the end of the MIB view
+                print(f"SNMP walk error_status for hostname: {self.hostname} prefix: {oid_prefix}: {error_status}")
                 break
             else:
-                for var_bind in var_bind_table:
-                    oid,value = var_bind
-                    
-                    # ! what about that case when we have multiple oid_prefix, then how we will handle think of the soln
-                    if not str(oid).startswith(oid_prefix):
-                        return result
-                    # prettyPrint() converts the value to a readable string format
-                    if hasattr(value, 'tagSet') and 'EndOfMibView' in str(value):
+               
+                print(f"DEBUG: var_bind_table type: {type(var_bind_table)}, length: {len(var_bind_table) if var_bind_table else 0}")
+                
+                valid_binds = []
+                for i, var_bind_row in enumerate(var_bind_table):
+               
+                    if not isinstance(var_bind_row, list) or len(var_bind_row) == 0:
+                        print(f"DEBUG: Unexpected var_bind_row format: {var_bind_row}")
                         continue
                     
+                  
+                    obj_type = var_bind_row[0]
+                    oid = obj_type[0] 
+                    value = obj_type[1] 
+                    
+                    # Check for end of MIB first
+                    if hasattr(value, 'tagSet') and 'EndOfMibView' in str(value):
+                        print(f"DEBUG: End of MIB reached at OID: {oid}")
+                        break
+                    
+                    # Check if we're still within our desired OID prefix
+                    if not str(oid).startswith(oid_prefix):
+                        print(f"DEBUG: OID {oid} is outside prefix {oid_prefix}, ending walk")
+                        break
+                    
+                    # Store valid results
                     result[str(oid)] = value.prettyPrint()
+                    valid_binds.append(oid)
+                    print(f"DEBUG: Added {oid} = {value.prettyPrint()}")
+                
+                if not valid_binds:
+                    print(f"DEBUG: No valid binds found, ending walk")
+                    break
+                
+                last_oid = valid_binds[-1]
+                
+                # Instead of using the same OID, let's try to get the next one
+                # by using nextCmd for a single step
+                try:
+                    next_error_indication, next_error_status, next_error_index, next_var_bind_table = await nextCmd(
+                        self.engine, community_data, transport_target, ContextData(), 
+                        ObjectType(ObjectIdentity(last_oid))
+                    )
+                    
+                    if next_error_indication or next_error_status or not next_var_bind_table:
+                        print(f"DEBUG: No next OID available after {last_oid}, ending walk")
+                        break
+                    
+                    # Get the next OID to continue bulk walking from
+                    next_oid = next_var_bind_table[0][0]
+                    if str(next_oid).startswith(oid_prefix):
+                        var_binds = [ObjectType(ObjectIdentity(next_oid))]
+                        print(f"DEBUG: Next iteration will start from OID: {next_oid}")
+                    else:
+                        print(f"DEBUG: Next OID {next_oid} is outside prefix, ending walk")
+                        break
+                except Exception as e:
+                    print(f"DEBUG: Error getting next OID: {e}, ending walk")
+                    break
                     
         return result
             

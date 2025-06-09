@@ -164,7 +164,7 @@ class Device:
         if polled_data and "error" not in polled_data:
             await self.send_to_aggregator(polled_data)
         elif polled_data and "error" in polled_data:
-            print(f"didnt send data for {self.hostname} due to polling error: {polled_data["error"]}")
+            print(f"didnt send data for {self.hostname} due to polling error: {polled_data['error']}")
         else:
             print("No data from polled_device")
 

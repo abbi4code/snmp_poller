@@ -1,0 +1,83 @@
+{
+  "name": "switchmap-test",
+  "type": "clab",
+  "clab": {
+    "config": {
+      "prefix": "clab",
+      "mgmt": {
+        "network": "clab",
+        "bridge": "br-48e6e7521873",
+        "ipv4-subnet": "172.20.20.0/24",
+        "ipv4-gw": "172.20.20.1",
+        "ipv6-subnet": "3fff:172:20:20::/64",
+        "ipv6-gw": "3fff:172:20:20::1",
+        "mtu": 65535,
+        "external-access": true
+      }
+    }
+  },
+  "nodes": {
+    "switch01": {
+      "index": "0",
+      "shortname": "switch01",
+      "longname": "clab-switchmap-test-switch01",
+      "fqdn": "switch01.switchmap-test.io",
+      "group": "",
+      "labdir": "/Users/imexyyyyy/files/gsoc/postgsoc/snmp_poller/clab-switchmap-test/switch01",
+      "kind": "linux",
+      "image": "alpine:latest",
+      "mgmt-net": "",
+      "mgmt-intf": "",
+      "mgmt-ipv4-address": "172.20.20.3",
+      "mgmt-ipv4-prefix-length": 24,
+      "mgmt-ipv6-address": "3fff:172:20:20::3",
+      "mgmt-ipv6-prefix-length": 64,
+      "mac-address": "",
+      "labels": {
+        "clab-mgmt-net-bridge": "br-48e6e7521873",
+        "clab-node-group": "",
+        "clab-node-kind": "linux",
+        "clab-node-lab-dir": "/Users/imexyyyyy/files/gsoc/postgsoc/snmp_poller/clab-switchmap-test/switch01",
+        "clab-node-name": "switch01",
+        "clab-node-type": "",
+        "clab-owner": "",
+        "clab-topo-file": "/Users/imexyyyyy/files/gsoc/postgsoc/snmp_poller/test.clab.yml",
+        "containerlab": "switchmap-test"
+      },
+      "port-bindings": [
+      ]
+    },
+    "switch02": {
+      "index": "1",
+      "shortname": "switch02",
+      "longname": "clab-switchmap-test-switch02",
+      "fqdn": "switch02.switchmap-test.io",
+      "group": "",
+      "labdir": "/Users/imexyyyyy/files/gsoc/postgsoc/snmp_poller/clab-switchmap-test/switch02",
+      "kind": "linux",
+      "image": "alpine:latest",
+      "mgmt-net": "",
+      "mgmt-intf": "",
+      "mgmt-ipv4-address": "172.20.20.2",
+      "mgmt-ipv4-prefix-length": 24,
+      "mgmt-ipv6-address": "3fff:172:20:20::2",
+      "mgmt-ipv6-prefix-length": 64,
+      "mac-address": "",
+      "labels": {
+        "clab-mgmt-net-bridge": "br-48e6e7521873",
+        "clab-node-group": "",
+        "clab-node-kind": "linux",
+        "clab-node-lab-dir": "/Users/imexyyyyy/files/gsoc/postgsoc/snmp_poller/clab-switchmap-test/switch02",
+        "clab-node-name": "switch02",
+        "clab-node-type": "",
+        "clab-owner": "",
+        "clab-topo-file": "/Users/imexyyyyy/files/gsoc/postgsoc/snmp_poller/test.clab.yml",
+        "containerlab": "switchmap-test"
+      },
+      "port-bindings": [
+      ]
+    }
+  },
+  "links": [
+  ]
+}
