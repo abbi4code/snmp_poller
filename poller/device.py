@@ -5,6 +5,7 @@ import zmq.asyncio
 
 from async_snmp import AsyncSNMPClient
 
+
 class Device:
     def __init__(self,device_config,aggregator_config):
         """
@@ -52,7 +53,7 @@ class Device:
 
         print(f"DevicePoller initialized for {self.hostname}:{self.port}")
 
-
+    
     
     async def poll_device(self):
 

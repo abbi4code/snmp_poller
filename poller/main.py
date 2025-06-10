@@ -35,6 +35,7 @@ async def main():
     
     # now if everything good, yeahhh we can move to taking out all the devices
 
+    # ! Currently we are created one poller for each device (we can fix the no of pollers later if needed)
     pollers = []
 
     if not config["poller"]["devices"]:
@@ -44,6 +45,7 @@ async def main():
     # like if want to have a single zmq context for all the pollers
     # like if we want to share context 
     #zmq_context = zmq.asyncio.Context() 
+
     
     for each_device in config["poller"]["devices"]:
         if "hostname" not in each_device:
@@ -82,6 +84,9 @@ async def main():
     #polling_tasks = [poller.poll_device() for poller in pollers]
     polling_tasks = [poller.poll_and_send() for poller in pollers]
     # like how does it looks is it like we are appending data from each hostname and appending this in this polling_task
+
+    
+
 
     print(f"\nstarting to poll {len(pollers)} device(s)")
 
