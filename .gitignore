@@ -6,3 +6,6 @@ public.txt
 __pycache__
 ./poller/__pycache__
 .DS_Store
+
+clab-linux-test
+.linux-test.clab.yml.bak
