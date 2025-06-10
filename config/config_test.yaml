@@ -1,58 +1,55 @@
 poller:
-  interval: 10  # Poll every 10 seconds for testing
-  timeout: 5    # SNMP timeout in seconds
-  retries: 2    # Number of retries
+  interval: 10  # poll every 10 seconds for testing
+  timeout: 5    # SNMP timeout
+  retries: 2   
   
-  # ZeroMQ configuration for sending data to aggregator
   aggregator:
     address: "localhost"
     port: 5555
-
-  # Real containerlab devices (from the deployment output)
   devices:
-    - hostname: "172.20.20.3"   # switch01
+    - hostname: "172.20.20.3"
       community: "public"
       version: 2
       port: 161
-    - hostname: "172.20.20.9"   # switch02
+    - hostname: "172.20.20.9"
+      community: "public" 
+      version: 2
+      port: 161
+    - hostname: "172.20.20.17"
       community: "public"
       version: 2
       port: 161
-    - hostname: "172.20.20.17"  # switch03
+    - hostname: "172.20.20.21"
       community: "public"
       version: 2
       port: 161
-    - hostname: "172.20.20.21"  # switch04
+    - hostname: "172.20.20.5"
       community: "public"
       version: 2
       port: 161
-    - hostname: "172.20.20.5"   # switch05
+    - hostname: "172.20.20.6"
       community: "public"
       version: 2
       port: 161
-    - hostname: "172.20.20.6"   # switch06
+    - hostname: "172.20.20.20"
       community: "public"
       version: 2
       port: 161
-    - hostname: "172.20.20.20"  # switch07
+    - hostname: "172.20.20.18"
       community: "public"
       version: 2
       port: 161
-    - hostname: "172.20.20.18"  # switch08
+    - hostname: "172.20.20.11"
       community: "public"
       version: 2
       port: 161
-    - hostname: "172.20.20.11"  # switch09
-      community: "public"
-      version: 2
-      port: 161
-    - hostname: "172.20.20.19"  # switch10
+    - hostname: "172.20.20.19"
       community: "public"
       version: 2
       port: 161
 
 aggregator:
-  # Database configuration
+  # db_config
   database:
     path: "data/switchmap_test.db"
   
@@ -61,12 +58,11 @@ aggregator:
     address: "*"
     port: 5555
   
-  # Web server configuration (for future web interface)
+  # Web server configuration (baaad me)
   web:
     host: "localhost"
     port: 8080
 
-# Logging configuration
 logging:
   level: "INFO"
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s" 

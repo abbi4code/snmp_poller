@@ -1,0 +1,111 @@
+poller:
+  interval: 30 
+  timeout: 10   
+  retries: 3    
+  
+  # ZeroMQ config for sending data to aggregator
+  aggregator:
+    address: "localhost"
+    port: 5555
+
+  # each container devices
+  devices:
+    - hostname: "172.20.20.11"
+      community: "public"
+      version: 2
+      port: 161
+    - hostname: "172.20.20.12"
+      community: "public"
+      version: 2
+      port: 161
+    - hostname: "172.20.20.13"
+      community: "public"
+      version: 2
+      port: 161
+    - hostname: "172.20.20.14"
+      community: "public"
+      version: 2
+      port: 161
+    - hostname: "172.20.20.15"
+      community: "public"
+      version: 2
+      port: 161
+    - hostname: "172.20.20.16"
+      community: "public"
+      version: 2
+      port: 161
+    - hostname: "172.20.20.17"
+      community: "public"
+      version: 2
+      port: 161
+    - hostname: "172.20.20.18"
+      community: "public"
+      version: 2
+      port: 161
+    - hostname: "172.20.20.19"
+      community: "public"
+      version: 2
+      port: 161
+    - hostname: "172.20.20.20"
+      community: "public"
+      version: 2
+      port: 161
+    - hostname: "172.20.20.21"
+      community: "public"
+      version: 2
+      port: 161
+    - hostname: "172.20.20.22"
+      community: "public"
+      version: 2
+      port: 161
+    - hostname: "172.20.20.23"
+      community: "public"
+      version: 2
+      port: 161
+    - hostname: "172.20.20.24"
+      community: "public"
+      version: 2
+      port: 161
+    - hostname: "172.20.20.25"
+      community: "public"
+      version: 2
+      port: 161
+    - hostname: "172.20.20.26"
+      community: "public"
+      version: 2
+      port: 161
+    - hostname: "172.20.20.27"
+      community: "public"
+      version: 2
+      port: 161
+    - hostname: "172.20.20.28"
+      community: "public"
+      version: 2
+      port: 161
+    - hostname: "172.20.20.29"
+      community: "public"
+      version: 2
+      port: 161
+    - hostname: "172.20.20.30"
+      community: "public"
+      version: 2
+      port: 161
+
+
+aggregator:
+  # db config
+  database:
+    path: "data/switchmap.db"
+  
+  # ZeroMQ configgg for receiving data from pollers
+  zeromq:
+    address: "*"
+    port: 5555
+
+  web:
+    host: "localhost"
+    port: 8080
+
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
