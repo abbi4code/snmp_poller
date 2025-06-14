@@ -4,8 +4,9 @@ import json
 import zmq
 
 from storage import DeviceStorage
-class Collector:
+class Collector:  
     def __init__(self, aggregator_config):
+        print(f"aggregator_config: {aggregator_config}")
         self.address = aggregator_config.get("address","localhost")
         self.port = aggregator_config.get("port", 5555)
 
@@ -19,17 +20,14 @@ class Collector:
             print("database storage not configured")
             
             storage_path = "./data/devices.db"
-            if "storage" in aggregator_config and "path" in aggregator_config["storage"]:
-                 storage_path = aggregator_config["storage"]["path"]
+            # if "storage" in aggregator_config and "path" in aggregator_config["storage"]:
+            #      storage_path = aggregator_config["storage"]["path"]
             print(f"Aggregator WARNING: Using storage path '{storage_path}' (default or from config).")
         else:
             storage_path = aggregator_config["storage"]["path"]
         
         self.storage = DeviceStorage(db_path=storage_path)
         print("DeviceStorgae instance created")
-
-
-        
 
         print(f"aggregator pull socket now listening for address: {self.address} on port: {self.port}")
 

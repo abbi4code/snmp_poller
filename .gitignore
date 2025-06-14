@@ -9,3 +9,6 @@ __pycache__
 
 clab-linux-test
 .linux-test.clab.yml.bak
+snmpsim-data
+/scripts/scale_test.py
+/scripts/check_db.py

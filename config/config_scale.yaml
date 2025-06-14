@@ -1,14 +1,14 @@
 poller:
-  interval: 30 
-  timeout: 10   
-  retries: 3    
+  interval: 30  # Poll every 30 seconds
+  timeout: 10   # SNMP timeout in seconds
+  retries: 3    # Number of retries
   
-  # ZeroMQ config for sending data to aggregator
+  # ZeroMQ configuration for sending data to aggregator
   aggregator:
     address: "localhost"
     port: 5555
 
-  # each container devices
+  # List of devices to poll
   devices:
     - hostname: "172.20.20.11"
       community: "public"
@@ -93,19 +93,21 @@ poller:
 
 
 aggregator:
-  # db config
+  # Database configuration
   database:
     path: "data/switchmap.db"
   
-  # ZeroMQ configgg for receiving data from pollers
+  # ZeroMQ configuration for receiving data from pollers
   zeromq:
     address: "*"
     port: 5555
-
+  
+  # Web server configuration (for future web interface)
   web:
     host: "localhost"
     port: 8080
 
+# Logging configuration
 logging:
   level: "INFO"
   format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

@@ -15,40 +15,9 @@ def generate_snmp_configs(num_devices=20, output_dir="snmp-devices"):
         config_content = f"""# SNMP Configuration for device {i}
 agentAddress udp:161
 rocommunity public
-
-# System information
-sysLocation    "Test Lab - Device {i}"
-sysContact     "admin@testlab.com"
+sysLocation    "Test Lab Device {i}"
+sysContact     "admin@test.com"
 sysName        "switch-{i}"
-
-# Interface simulation - simulating a 24-port switch
-interface 1
-interface 2
-interface 3
-interface 4
-interface 5
-interface 6
-interface 7
-interface 8
-interface 9
-interface 10
-interface 11
-interface 12
-interface 13
-interface 14
-interface 15
-interface 16
-interface 17
-interface 18
-interface 19
-interface 20
-interface 21
-interface 22
-interface 23
-interface 24
-
-# SNMP logging
-logTimestamp yes
 """
         
         filename = os.path.join(output_dir, f"snmpd-{i}.conf")
@@ -112,13 +81,13 @@ logging:
     print(f"Generated config/config_scale.yaml with {num_devices} devices")
 
 if __name__ == "__main__":
-    # Generate configs for 20 devices
+    # generate configs for 20 devices
     generate_snmp_configs(20)
     generate_config_yaml(20)
     
-    print("\nScale testing configs generated!")
-    print("- 20 SNMP device configs in snmp-devices/")
-    print("- config/config_scale.yaml with 20 devices")
+    print("\nScale testing configs generated")
+    print("20 SNMP device configs in snmp-devices/")
+    print("config/config_scale.yaml with 20 devices")
     print("\nTo use the scale config:")
     print("1. Deploy containerlab: containerlab deploy -t linux-test.clab.yml")
     print("2. Copy config: cp config/config_scale.yaml config/config.yaml") 

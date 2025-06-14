@@ -47,6 +47,7 @@ async def main():
     #zmq_context = zmq.asyncio.Context() 
 
     
+
     for each_device in config["poller"]["devices"]:
         if "hostname" not in each_device:
             print(f"skipping this device as no hostname found for it in the config")

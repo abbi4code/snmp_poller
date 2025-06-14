@@ -2,7 +2,6 @@ name: linux-test
 
 topology:
   nodes:
-    # First batch - original 3 switches
     switch01:
       kind: linux
       image: alpine:latest
@@ -12,7 +11,9 @@ topology:
         - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-1.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
     switch02:
       kind: linux
       image: alpine:latest
@@ -22,19 +23,21 @@ topology:
         - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-2.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
     switch03:
       kind: linux
       image: alpine:latest
       binds:
         - snmp-devices:/shared:ro
       exec:
-        - apkb add --no-cache net-snmp net-snmp-tools
+        - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-3.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
-    
-    # Scale test batch - adding 17 more devices for 20 total
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
     switch04:
       kind: linux
       image: alpine:latest
@@ -44,7 +47,9 @@ topology:
         - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-4.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
     switch05:
       kind: linux
       image: alpine:latest
@@ -54,7 +59,9 @@ topology:
         - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-5.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
     switch06:
       kind: linux
       image: alpine:latest
@@ -64,7 +71,9 @@ topology:
         - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-6.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
     switch07:
       kind: linux
       image: alpine:latest
@@ -74,7 +83,9 @@ topology:
         - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-7.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
     switch08:
       kind: linux
       image: alpine:latest
@@ -84,7 +95,9 @@ topology:
         - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-8.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
     switch09:
       kind: linux
       image: alpine:latest
@@ -94,7 +107,9 @@ topology:
         - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-9.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
     switch10:
       kind: linux
       image: alpine:latest
@@ -104,7 +119,9 @@ topology:
         - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-10.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
     switch11:
       kind: linux
       image: alpine:latest
@@ -114,7 +131,9 @@ topology:
         - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-11.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
     switch12:
       kind: linux
       image: alpine:latest
@@ -124,7 +143,9 @@ topology:
         - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-12.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
     switch13:
       kind: linux
       image: alpine:latest
@@ -134,7 +155,9 @@ topology:
         - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-13.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
     switch14:
       kind: linux
       image: alpine:latest
@@ -144,7 +167,9 @@ topology:
         - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-14.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
     switch15:
       kind: linux
       image: alpine:latest
@@ -154,7 +179,9 @@ topology:
         - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-15.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
     switch16:
       kind: linux
       image: alpine:latest
@@ -164,7 +191,9 @@ topology:
         - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-16.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
     switch17:
       kind: linux
       image: alpine:latest
@@ -174,7 +203,9 @@ topology:
         - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-17.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
     switch18:
       kind: linux
       image: alpine:latest
@@ -184,7 +215,9 @@ topology:
         - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-18.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
     switch19:
       kind: linux
       image: alpine:latest
@@ -194,7 +227,9 @@ topology:
         - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-19.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
     switch20:
       kind: linux
       image: alpine:latest
@@ -204,7 +239,9 @@ topology:
         - apk add --no-cache net-snmp net-snmp-tools
         - mkdir -p /etc/snmp
         - cp /shared/snmpd-20.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
+        - sh -c "killall snmpd 2>/dev/null || true"
+        - sleep 1
+        - sh -c "snmpd -Lo >/dev/null 2>&1 &"
 
   links: []
 
