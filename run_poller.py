@@ -3,7 +3,6 @@
 import sys
 import os
 
-#understand this one
 sys.path.insert(0, os.path.join(os.path.dirname(__file__),'poller'))
 
 from main import main

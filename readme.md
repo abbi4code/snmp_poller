@@ -1,67 +1,105 @@
-## Setting ContainerLab for testing 
-- Set up Alpine Linux containers with SNMP tools
-  
-#OS - Linux 
+# SNMP Poller
 
-### Install ContainerLab
-`bash -c "$(curl -sL https://get.containerlab.dev)"`
+A scalable SNMP polling system that efficiently collects and aggregates network device data.
 
-### Output
-![Screenshot from 2025-06-10 15-23-03](https://github.com/user-attachments/assets/df4d26bd-fa2e-41fa-84f2-a75c2b79dd5b)
+## 🚀 Quick Start Guide
 
-### Add yourself to container admin group
-`sudo usermod -aG clab_admins abhishek`
+### Prerequisites
+- Python 3.8 or higher
+- ContainerLab (for network simulation)
+- Docker (for running containers)
 
-### Configure your containerLab setup for SNMP daemons 
-- eg- 
-``
-name: linux-test
+### Step 1: Set Up Your Environment
 
-topology:
-  nodes:
-    switch01:
-      kind: linux
-      image: alpine:latest
-      binds:
-        - snmp-devices:/shared:ro
-      exec:
-        - apk add --no-cache net-snmp net-snmp-tools
-        - mkdir -p /etc/snmp
-        - cp /shared/snmpd-1.conf /etc/snmp/snmpd.conf
-        - snmpd -f -Lo &
-  links: []
+1. Clone this repository:
+```bash
+git clone https://github.com/abbi4code/snmp_poller.git
+cd snmp_poller
+```
 
-mgmt:
-  network: clab-mgmt
-  ipv4-subnet: 172.20.20.0/24
-``
+2. Create and activate a virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows, use: venv\Scripts\activate
+```
 
-### Generate Config files for your daemons
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-- Run `generate_snmp_configs.py`
+### Step 2: Set Up Network Simulation
 
-### Deploy 20-device topology
-`sudo containerlab deploy -t linux-test.clab.yml`
+1. Install ContainerLab:
+```bash
+bash -c "$(curl -sL https://get.containerlab.dev)"
+```
 
-### Use scale config
-`cp config/config_scale.yaml config/config.yaml`
+2. Add yourself to the container admin group:
+```bash
+sudo usermod -aG clab_admins $USER
+```
 
-### Run aggregator & poller in seperate terminal 
+3. Generate SNMP configuration files:
+```bash
+python scripts/generate_snmp_configs.py
+```
 
-First activate your virtual env
-- `source venv/bin/activate`
+4. Deploy the test network topology:
+```bash
+sudo containerlab deploy -t linux-test.clab.yml
+```
 
-#### Terminal 1
-- `python aggregator/__init_.py`
+### Step 3: Run the Application
 
-#### Terminal 2
-- `python run_poller.py`
+1. Start the aggregator (in one terminal):
+```bash
+source venv/bin/activate
+python aggregator/__init__.py
+```
 
-#### Outputs on poller side
-  ![Screenshot from 2025-06-10 17-00-05](https://github.com/user-attachments/assets/277f6555-66fd-4337-9c64-f61e19defc7d)
+2. Start the poller (in another terminal):
+```bash
+source venv/bin/activate
+python run_poller.py
+```
 
-![Screenshot from 2025-06-10 17-01-05](https://github.com/user-attachments/assets/aa847f22-eb79-43a1-9318-52e75ee73d5c)
+## Configuration
 
-#### Outputs on aggregator side
+- The default configuration is in `config/config.yaml`
+- For testing with more devices, use the scale configuration:
+```bash
+cp config/config_scale.yaml config/config.yaml
+```
 
-![Screenshot from 2025-06-10 17-02-02](https://github.com/user-attachments/assets/0c8e314e-55eb-44b7-b216-4f0a186bfe92)
+## Monitoring
+
+- The poller will show real-time SNMP polling results
+- The aggregator will display collected and processed data
+- Check the `data/` directory for stored metrics
+- Like you can do this 
+```bash
+sqlite3 ./data/devices.db
+.tables
+select * from devices/interfaces # jst an example
+```
+
+## Troubleshooting
+
+1. If you encounter permission issues with ContainerLab:
+   - Ensure you're in the `clab_admins` group
+   - Try logging out and back in after adding the group
+
+2. If SNMP polling fails:
+   - Verify the network topology is running (`sudo containerlab inspect -t linux-test.clab.yml`)
+   - Check SNMP configurations in `snmp-devices/`
+
+## Additional Resources
+
+- [SNMP Documentation](https://www.ietf.org/rfc/rfc1157.txt)
+- [ContainerLab Documentation](https://containerlab.dev/)
+- [PySNMP Documentation](https://pysnmp.readthedocs.io/)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request 😎.
