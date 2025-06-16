@@ -8,7 +8,6 @@ import os
 def generate_snmp_configs(num_devices=20, output_dir="snmp-devices"):
     """Generate SNMP configuration files for multiple devices"""
     
-    # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
     
     for i in range(1, num_devices + 1):

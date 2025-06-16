@@ -15,7 +15,6 @@ class AsyncSNMPClient:
         self.port = port
         self.engine = SnmpEngine()
         
-        # Performance monitoring
         self.stats = {
             'requests_sent': 0,
             'requests_failed': 0,
@@ -58,6 +57,7 @@ class AsyncSNMPClient:
                     return None
                 else:
                     result = var_binds[0][1].prettyPrint()
+                    print(f"Result=>>>>>>>>>>>>>>>> {result}")
                     elapsed = time.time() - start_time
                     self.stats['total_time'] += elapsed
                     return result
@@ -130,7 +130,7 @@ class AsyncSNMPClient:
             current_oid = oid
             
         return result
-        
+
     async def _walk_v2(self, oid_prefix, community_data, transport_target):
         """Enhanced walk implementation for SNMPv2c using bulkCmd"""
         result = {}
@@ -140,7 +140,7 @@ class AsyncSNMPClient:
         
         while var_binds and iterations < max_iterations:
             iterations += 1
-            
+
             error_indication, error_status, error_index, var_bind_table = await bulkCmd(
                 self.engine, community_data, transport_target, ContextData(),
                 0, 25, 
@@ -162,7 +162,7 @@ class AsyncSNMPClient:
                 obj_type = var_bind_row[0]
                 oid = obj_type[0]
                 value = obj_type[1]
-                
+
                 # checking for end of MIB
                 if hasattr(value, 'tagSet') and 'EndOfMibView' in str(value):
                     break
@@ -176,7 +176,7 @@ class AsyncSNMPClient:
                 
             if not valid_binds:
                 break
-                
+            
             # preparing for next iteration ->> continue from the last OID
             last_oid = valid_binds[-1]
             try:
