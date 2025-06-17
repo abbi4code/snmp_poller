@@ -29,9 +29,6 @@ async def main():
         print("Some configs are missing from config file either poller or devices")
         return 
     
-    # now if everything good, yeahhh we can move to taking out all the devices
-
-    # ! Currently we are created one poller for each device (we can fix the no of pollers later if needed)
     pollers = []
 
     if not config["poller"]["devices"]:
@@ -52,14 +49,11 @@ async def main():
 
             aggregator_cfg_for_poller = {"address": "localhost", "port": 5555}
 
-        # here we are just creating a instance for each devices 
-        # not called for polling here
-        #<----here we can pass that context (it would be a central context)
         poller = Device(
             device_config = each_device,
             aggregator_config = aggregator_cfg_for_poller
         )
-        #now we are just inserting the data from each devices 
+
         pollers.append(poller)
     
     if not pollers:

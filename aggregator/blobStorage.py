@@ -35,10 +35,41 @@ CREATE TABLE IF NOT EXISTS temp_snmp_data (
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute("""
 INSERT INTO temp_snmp_data (device_id,timestamp,poll_batch_id,oid_data) VALUES (?,?,?,?)
-""", device_id,int(time.time(),poll_batch_id,compressed_data))
+""", (device_id,int(time.time()),poll_batch_id,compressed_data))
             await db.commit()
     
     #getpendingdata
+
+    async def get_pending_data(self,limit):
+        """Get the Data back to send to aggregator when connection available"""
+        # async with aiosqlite.connect(self.db_path) as db:
+        #     #! this data is the pointing to the result set in the DB
+        #     #! have to bring that all using this ptr
+        #     data = await db.execute("Select id,device_id,timestamp,oid_data from temp_snmp_data WHERE status = 'pending' LIMIT ?", (limit,))
+        # return await data.fetchall()
+
+        #! lets try a better arch
+        async with aiosqlite.connect(self.db_path) as db:
+            cursor_data= await db.execute("SELECT id, device_id,timestamp,oid_data,status FROM temp_snmp_data WHERE status = 'pending' LIMIT ?",(limit,))
+            collected_data = await cursor_data.fetchall()
+
+            if(collected_data):
+               id_list = [[row[0] for row in collected_data]]
+               placeholder = ",".join('?' * len(id_list))
+
+               await db.execute(f"UPDATE temp_snmp_data SET status = 'in_progress' WHERE id IN ({placeholder}) ", id_list)
+
+               await db.commit()
+            
+            return collected_data
+
+      
+    
+ 
+
+
+
+
 
     #mark_as_sent
 
