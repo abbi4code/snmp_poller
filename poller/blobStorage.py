@@ -9,7 +9,7 @@ import time
 class OfflineStorage():
     def __init__(self, db_path):
         self.db_path = db_path
-        self.initialize_db()
+        self._initialized = False
 
     async def initialize_db(self):
         """ Test schema """
@@ -28,8 +28,16 @@ CREATE TABLE IF NOT EXISTS temp_snmp_data (
 """)
             await db.commit()
     
+    async def ensure_initialization(self):
+        """ensuring that db is always ready"""
+        if not self._initialized:
+            await self.initialize_db() 
+            self._initialized = True
+    
     async def store_offline(self, device_id,polled_data,poll_batch_id):
+
         """ Storing data offline if not aggregator connection found"""
+        await self.ensure_initialization()
         #converting to json string then to bytes 
         compressed_data = zlib.compress(json.dumps(polled_data).encode("utf-8"))
         print(f"compressed_data: {compressed_data}")
@@ -56,7 +64,7 @@ INSERT INTO temp_snmp_data (device_id,timestamp,poll_batch_id,oid_data) VALUES (
             collected_data = await cursor_data.fetchall()
 
             if(collected_data):
-               id_list = [[row[0] for row in collected_data]]
+               id_list = [row[0] for row in collected_data]
                placeholder = ','.join('?' * len(id_list))
 
                await db.execute(f"UPDATE temp_snmp_data SET status = 'in_progress' WHERE id IN ({placeholder}) ", id_list)
@@ -67,12 +75,14 @@ INSERT INTO temp_snmp_data (device_id,timestamp,poll_batch_id,oid_data) VALUES (
     
     async def mark_as_sent(self, record_id):
         """Deleting our already send data """
+        if not record_id:
+            return
 
-        placeholder = ','.join('?'*len(record_id))
+        placeholder = ','.join('?' * len(record_id))
 
         async with aiosqlite.connect(self.db_path) as db:
-            await db.execute(f"DELETE FROM temp_snmp_data WHERE id = ({placeholder})",record_id)
-            await db.execute()
+            await db.execute(f"DELETE FROM temp_snmp_data WHERE id  IN ({placeholder})",record_id)
+            await db.commit()
     
     async def cleanup_old_data(self, days_old = 7):
         """ clean up old data to prevent disk space issues """

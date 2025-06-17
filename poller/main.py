@@ -39,6 +39,7 @@ async def main():
         return
     
     blob_storage = OfflineStorage(db_path=db_path)
+    await blob_storage.ensure_initialization()
 
 
     

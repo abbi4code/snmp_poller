@@ -125,25 +125,24 @@ class Device:
         
         except Exception as e:
             print(f"Error while sending data to aggregator: err: {e}")
+
+
     #! for now, lets test it out here
     async def poll_and_fallback(self):
         """ Poll that data & check aggregator then either send or save in temp blob form"""
-        polled_data = self.poll_device()
+        polled_data = await self.poll_device()
 
 
         if polled_data and "error" not in polled_data:
             try:
                 await self.send_to_aggregator(polled_data)
-            except (ConnectionError,TimeoutError) as e:
+            except Exception as e:
                 poll_batch_id = f"{self.hostname}_{int(time.time())}"
-                self.storage.store_offline(device_id = self.hostname, polled_data = polled_data, poll_batch_id = poll_batch_id)
+                await self.storage.store_offline(device_id = self.hostname, polled_data = polled_data, poll_batch_id = poll_batch_id)
         elif polled_data and "error" in polled_data:
             print(f"didnt send data for {self.hostname} due to polling error: {polled_data['error']}")
         else:
             print("No data from polled_device")
-
-
-
 
 
     async def poll_and_send(self):
