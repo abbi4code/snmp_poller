@@ -5,12 +5,15 @@ import os
 import zmq.asyncio
 import zmq
 
+from blobStorage import OfflineStorage
+
 from device import Device
 
 
 async def main():
 
     config_path = "config/config.yaml"
+    db_path = "temp_polled_data/data.db"
 
     try:
         
@@ -34,6 +37,9 @@ async def main():
     if not config["poller"]["devices"]:
         print("No devices are there in poller.devices")
         return
+    
+    blob_storage = OfflineStorage(db_path=db_path)
+
 
     
 
@@ -51,15 +57,19 @@ async def main():
 
         poller = Device(
             device_config = each_device,
-            aggregator_config = aggregator_cfg_for_poller
+            aggregator_config = aggregator_cfg_for_poller,
+            storage = blob_storage
         )
+    
+        
+        
 
         pollers.append(poller)
     
     if not pollers:
         print("No valid device pollers could be created")
         return
-    polling_tasks = [poller.poll_and_send() for poller in pollers]
+    polling_tasks = [poller.poll_and_fallback() for poller in pollers]
 
     print(f"\nstarting to poll {len(pollers)} device(s)")
 
