@@ -4,6 +4,8 @@ import aiosqlite
 import json
 import time
 
+#! add concise error handlign 
+
 class OfflineStorage():
     def __init__(self, db_path):
         self.db_path = db_path
@@ -55,13 +57,35 @@ INSERT INTO temp_snmp_data (device_id,timestamp,poll_batch_id,oid_data) VALUES (
 
             if(collected_data):
                id_list = [[row[0] for row in collected_data]]
-               placeholder = ",".join('?' * len(id_list))
+               placeholder = ','.join('?' * len(id_list))
 
                await db.execute(f"UPDATE temp_snmp_data SET status = 'in_progress' WHERE id IN ({placeholder}) ", id_list)
 
                await db.commit()
             
             return collected_data
+    
+    async def mark_as_sent(self, record_id):
+        """Deleting our already send data """
+
+        placeholder = ','.join('?'*len(record_id))
+
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute(f"DELETE FROM temp_snmp_data WHERE id = ({placeholder})",record_id)
+            await db.execute()
+    
+    async def cleanup_old_data(self, days_old = 7):
+        """ clean up old data to prevent disk space issues """
+        cutoff_time = int(time.time()) - (days_old * 24 * 60 * 60)
+
+        async with aiosqlite.connect(self.db_path) as db:
+            await db.execute(f"DELETE FROM temp_snmp_data WHERE timestamp < ?", (cutoff_time,))
+            await db.commit()
+
+    
+
+
+
 
       
     
