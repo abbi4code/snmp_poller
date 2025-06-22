@@ -42,37 +42,62 @@ INSERT INTO temp_snmp_data (device_id,timestamp,poll_batch_id,oid_data) VALUES (
     
     #getpendingdata
 
-    async def get_pending_data(self,limit):
+    async def get_pending_data(self, limit):
         """Get the Data back to send to aggregator when connection available"""
-        # async with aiosqlite.connect(self.db_path) as db:
-        #     #! this data is the pointing to the result set in the DB
-        #     #! have to bring that all using this ptr
-        #     data = await db.execute("Select id,device_id,timestamp,oid_data from temp_snmp_data WHERE status = 'pending' LIMIT ?", (limit,))
-        # return await data.fetchall()
-
-        #! lets try a better arch
         async with aiosqlite.connect(self.db_path) as db:
-            cursor_data= await db.execute("SELECT id, device_id,timestamp,oid_data,status FROM temp_snmp_data WHERE status = 'pending' LIMIT ?",(limit,))
+            cursor_data = await db.execute("SELECT id, device_id, timestamp, poll_batch_id, oid_data, status FROM temp_snmp_data WHERE status = 'pending' LIMIT ?", (limit,))
             collected_data = await cursor_data.fetchall()
 
-            if(collected_data):
-               id_list = [[row[0] for row in collected_data]]
-               placeholder = ','.join('?' * len(id_list))
+            if collected_data:
+                # Fix the id_list bug - remove extra brackets
+                id_list = [row[0] for row in collected_data]
+                placeholder = ','.join('?' * len(id_list))
 
-               await db.execute(f"UPDATE temp_snmp_data SET status = 'in_progress' WHERE id IN ({placeholder}) ", id_list)
-
-               await db.commit()
+                await db.execute(f"UPDATE temp_snmp_data SET status = 'in_progress' WHERE id IN ({placeholder})", id_list)
+                await db.commit()
             
-            return collected_data
+            # Decompress and decode the data before returning
+            processed_data = []
+            for row in collected_data:
+                record_id, device_id, timestamp, poll_batch_id, compressed_oid_data, status = row
+                
+                try:
+                    # Step 1: Decompress the compressed bytes
+                    decompressed_bytes = zlib.decompress(compressed_oid_data)
+                    
+                    # Step 2: Decode bytes to string
+                    json_string = decompressed_bytes.decode('utf-8')
+                    
+                    # Step 3: Parse JSON string back to Python object
+                    oid_data = json.loads(json_string)
+                    
+                    # Return the record with decompressed data
+                    processed_data.append({
+                        'id': record_id,
+                        'device_id': device_id,
+                        'timestamp': timestamp,
+                        'poll_batch_id': poll_batch_id,
+                        'oid_data': oid_data,  # Now this is a proper Python dict/list
+                        'status': status
+                    })
+                    
+                except (zlib.error, json.JSONDecodeError, UnicodeDecodeError) as e:
+                    print(f"Error decompressing data for record {record_id}: {e}")
+                    # You might want to mark this record as corrupted
+                    continue
+            
+            return processed_data
     
-    async def mark_as_sent(self, record_id):
-        """Deleting our already send data """
-
-        placeholder = ','.join('?'*len(record_id))
+    async def mark_as_sent(self, record_ids):
+        """Deleting our already sent data"""
+        if not record_ids:
+            return
+            
+        placeholder = ','.join('?' * len(record_ids))
 
         async with aiosqlite.connect(self.db_path) as db:
-            await db.execute(f"DELETE FROM temp_snmp_data WHERE id = ({placeholder})",record_id)
-            await db.execute()
+            await db.execute(f"DELETE FROM temp_snmp_data WHERE id IN ({placeholder})", record_ids)
+            await db.commit()  # Fix: Add missing commit
     
     async def cleanup_old_data(self, days_old = 7):
         """ clean up old data to prevent disk space issues """
